@@ -1,57 +1,78 @@
-const message = document.getElementById("message");
-const modal = document.getElementById("modal");
-const modalImg = document.getElementById("modalImg");
-const modalDesc = document.getElementById("modalDesc");
-const closeBtn = document.getElementById("closeBtn");
-const toggleMode = document.getElementById("toggleMode");
-const searchInput = document.getElementById("searchInput");
-const images = document.querySelectorAll(".image-container img");
-let currentIndex = 0;
+let likes = [0, 0, 0];
 
-// Show message and open modal
-images.forEach((img, index) => {
-  img.addEventListener("click", () => {
-    const desc = img.parentElement.dataset.desc;
-    message.textContent = `You clicked on: ${desc}`;
-    openModal(index);
-  });
-});
+function handleImageClick(img, index) {
+    //increment like counter
+    likes[index]++;
+    document.getElementById(`like-${index}`).textContent = `❤️ ${likes[index]}`;
+    
 
-// Open modal
-function openModal(index) {
-  currentIndex = index;
-  const img = images[index];
-  modal.style.display = "flex";
-  modalImg.src = img.src;
-  modalDesc.textContent = img.parentElement.dataset.desc;
+    const imageName = img.getAttribute('data-name');
+    const message = document.getElementById("message");
+    message.textContent = `You liked the ${imageName} image! (${likes[index]} likes)`;
 }
 
-// Close modal
-closeBtn.addEventListener("click", () => {
-  modal.style.display = "none";
+//doubleclick to open
+document.querySelectorAll('.gallery img').forEach(img => {
+    img.addEventListener('dblclick', function(e) {
+    e.stopPropagation();
+    openLightbox(this);
+    });
 });
 
-// Navigate images
-document.getElementById("nextBtn").addEventListener("click", () => {
-  currentIndex = (currentIndex + 1) % images.length;
-  openModal(currentIndex);
-});
+function openLightbox(img) {
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const caption = document.getElementById('lightbox-caption');
+    
+    lightbox.style.display = 'block';
+    lightboxImg.src = img.src;
+    caption.textContent = img.getAttribute('data-name');
+}
 
-document.getElementById("prevBtn").addEventListener("click", () => {
-  currentIndex = (currentIndex - 1 + images.length) % images.length;
-  openModal(currentIndex);
-});
+function closeLightbox() {
+    document.getElementById('lightbox').style.display = 'none';
+}
 
-// Toggle dark mode
-toggleMode.addEventListener("click", () => {
-  document.body.classList.toggle("dark-mode");
-});
+//filters
+function applyFilter(filterType) {
+    const images = document.querySelectorAll('.gallery img');
+    images.forEach(img => {
+    img.classList.remove('grayscale', 'sepia', 'blur');
+    if (filterType !== 'none') {
+        img.classList.add(filterType);
+    }
+    });
+}
 
-// Filter images by search
-searchInput.addEventListener("input", () => {
-  const filter = searchInput.value.toLowerCase();
-  document.querySelectorAll(".image-container").forEach(container => {
-    const desc = container.dataset.desc.toLowerCase();
-    container.style.display = desc.includes(filter) ? "block" : "none";
-  });
+//shuffling
+function shuffleGallery() {
+  const gallery = document.getElementById('gallery');
+  const items = Array.from(gallery.children);
+
+
+  for (let i = items.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [items[i], items[j]] = [items[j], items[i]];
+  }
+
+  items.forEach(item => gallery.appendChild(item));
+
+  document.getElementById('message').textContent = 'Gallery shuffled! ';
+}
+
+
+//reset likes
+function resetLikes() {
+    likes = [0, 0, 0];
+    for (let i = 0; i < 3; i++) {
+    document.getElementById(`like-${i}`).textContent = `0`;
+    }
+    document.getElementById('message').textContent = 'All likes have been reset!';
+}
+
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+    closeLightbox();
+    }
 });
